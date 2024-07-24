@@ -1,0 +1,22 @@
+{
+  "name": "france-travail-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "chokinyan",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^20.14.12",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "parse5": "^7.1.2",
+    "qs": "^6.12.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "type": "module"
+}
