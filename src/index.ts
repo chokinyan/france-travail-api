@@ -1,70 +1,111 @@
-import axios, {AxiosError, AxiosResponse} from 'axios';
-import {load} from 'cheerio';
+import axios, {AxiosResponse} from 'axios';
+import {Appelation,AppelationArray,AppelationParametre} from './Appelation.js';
+import {CodeNAF,CodeNAFArray,CodeNAFParametre} from './CodeNAF.js';
+import {CodeROME,CodeROMEArray,CodeROMEParametre} from './CodeROME.js';
+import {Communes,CommunesArray,CommunesParametre} from './Communes.js';
+import {Departements,DepartementsArray,DepartementsParametre} from './Departements.js';
+import {Domaines,DomainesArray,DomainesParametre} from './Domaines.js';
+import {NatureContrat,NatureContratArray,NatureContratParametre} from './NatureContrat.js';
+import {NiveauFormation,NiveauFormationArray,NiveauFormationParametre} from './NiveauFormation.js';
+import {Pays,PaysArray,PaysParametre} from './Pays.js';
+import {Continents,ContinentsArray,ContinentsParametre} from './Continents.js';
+import {Permis,PermisArray,PermisParametre} from './Permis.js';
+import {Regions,RegionsArray,RegionsParametre} from './Regions.js';
+import {TypeContrat,TypeContratArray,TypeContratParametre} from './TypeContrat.js';
+import {Theme,ThemeArray,ThemeParametre} from './Theme.js';
 
-//https://candidat.francetravail.fr/offres/recherche?lieux=68224&motsCles=informatique&offresPartenaires=true&range=0-19&rayon=10&tri=0
+type DureeHebdoFormat = {
+    heure : number //beetween 0-23
+    minute : number //beetween 0-59
+}
 
-//type sortByParamatre = "Relevant" | "Date" | "Distance";
-//type distanceParamatre = "exact location" | "5 km" | "10 km" | "20 km" | "30 km" | "40 km" | "50 km" | "60 km" | "70 km" | "80 km" | "90 km" | "100 km";
-//type CreationDateParametre = "a day" | "three days" | "a week" | "two weeks" | "a month" | "all"
-//type ContratParametre = "CDI" | "CDD" | "interim" | "CDI Interimaire" | "Saisonnier" | "Contrat apprentissage" | "Contrat professionnalisation" | "Act. Formation pre.recrut." | "Prépa.operationnel.emploi" | "CDI de chantier ou d'operation" | "Contrat d'engagement educatif" | "Contrat intermittent" | "Contrat pact"| "Contrat d'usage" | "CUI CAE" | "CUI CIE" | "Engagement a servir dans la reserve" | "Franchise" | "Insertion par l'activ.eco." | "Portage salarial" | "Profession commerciale" | "Profession liberale" | "Resprise d'entreprise";
-//type DurationParametre = "Temps plein" | "Temps partiel" | "Non renseignée";
-//type DomaineParametre = "Achat / Comptabilite / Gestion" | "Arts / Artisanat d'art" | "Banque / Assurance" | "Batiment / Travaux Publics" | "Commerce / Vente" | "Communication / Multimedia" | "Conseil / Etudes" | "Direction d'entreprise" | "Espaces verts et naturels / Agriculture / Peche / Soins aux animaux" | "Hotellerie - Restauration / Tourisme / Animation" | "Immobilier" | "Industrie" | "Informatique / Telecommunication" | "Installation / Maintenance" | "Marketing / Strategie commerciale" | "Ressources Humaines" | "Sante" | "Secretariat / Assistanat" | "Services à la personne / à la collectivite" | "Spectacle" | "Sport" | "Transport / Logistique";
-//type ExperienceParametre = "Moins de 1 an" | "De 1 a 3 ans" | "Plus de 3 ans" | "Non renseignee";
-//type QualitficationParametre = "Cadre" | "Non cadre" | "Non renseignee";
-//type SalaireBrutParametre = {salaire : Number,time : "Mensuel" |"Annuel"|"Horaire"|"Cachet"};
-//type HandicapeParametre = "Entreprise handi-bienveillante" | "Entreprise adaptée";
-//
-//type FranceTravailInfo = {
-//    keywords : string | "", // #motsCles
-//    sortBy? : sortByParamatre, // Relevant : 1 | Date : 2 | Distance : 3 #tri
-//    addressCode? : number, // code postal #lieux
-//    partenaireShip : boolean, // #offresPartenaires
-//    distance : distanceParamatre, // exact location : 0 #rayon
-//    deparetement? : boolean, // #lieu + D
-//    creationDate : CreationDateParametre, // all : pas de parametre | a day : 1 | three days : 3 | a week : 7 | two weeks : 14 | a month : 31 #emission
-//    contrat? : [ContratParametre], // #typeContrat CDI : CDI | CDD : CDD | interim : MIS | CDI Interimaire : DIN | Saisonnier : SAI | #natureOffre Contrat apprentissage : E2 | #natureOffre Contrat professionnalisation : FS | #natureOffre Act. Formation pre.recrut. : FA | #natureOffre Prépa.operationnel.emploi : FV | #natureOffre CDI de chantier ou d'operation : CC | #natureOffre Contrat d'engagement educatif : EE | #natureOffre Contrat intermittent : CI | #natureOffre Contrat pact : FJ | #natureOffre Contrat d'usage : CU | #natureOffre CUI CAE : FT | #natureOffre CUI CIE : FU | #natureOffre Engagement a servir dans la reserve : ER | Franchise : FRA | #nautreOffre Insertion par l'activ.eco. : I1 | #nautreOffre Portage salarial : PS | Profession commerciale : CCE | Profession liberale : LIB | Resprise d'entreprise : REP
-//    duration? : [DurationParametre], // #dureeHebdo Temps plein : 1 | Temps partiel : 2 | Non renseignée : 0
-//    domaine? : [DomaineParametre], // #domaine "Achat / Comptabilite / Gestion" : M | "Arts / Artisanat d'art" : B | "Banque / Assurance" : C | "Batiment / Travaux Publics" : F | "Commerce / Vente" : D | "Communication / Multimedia" : E | "Conseil / Etudes" : M14 | "Direction d'entreprise" : M13 | "Espaces verts et naturels / Agriculture / Peche / Soins aux animaux" : A | "Hotellerie - Restauration / Tourisme / Animation" : G | "Immobilier" : C15 | "Industrie" : H | "Informatique / Telecommunication" : M18 | "Installation / Maintenance" : I | "Marketing / Strategie commerciale" : M17 | "Ressources Humaines" : M15 | "Sante" : J | "Secretariat / Assistanat" : M16 | "Services à la personne / à la collectivite" : K | "Spectacle" : L | "Sport" : L14 | "Transport / Logistique" : N
-//    experience? : [ExperienceParametre], // #experienceSouhaitee "Moins de 1 an" : 1 | "De 1 a 3 ans" : 2 | "Plus de 3 ans" : 3 | "Non renseignee" : 0
-//    qualification? : [QualitficationParametre], // #qualification "Cadre" : 9 | "Non cadre" : 0 | "Non renseignee" : X
-//    opportunity? : boolean, // #offresPeuDeCandidats (bool)
-//    salaire? : SalaireBrutParametre, // #salaireMin (Number) || #uniteSalaire Mensuel : M | Annuel : A | Horaire : H | Cachet : C
-//    handicape? : [HandicapeParametre], // Entreprise handi-bienveillante : #Handibienveillantes (bool) | Entreprise adaptée : #offresEntreprisesAdaptees (bool)
-//};
+type RangeFormat = {
+    start : number,
+    end : number
+}
 
-//https://candidat.francetravail.fr/offres/recherche?lieux=68224&motsCles=informatique&offresPartenaires=true&rayon=10&tri=0
+type ExperienceParametre = "moins d'un an" | "de 1 à 3 ans" | "plus de 3 ans"; //1,2,3
+type ExperienceExigenceParametre = "débutant accepté" | "expérience souhaitée" | "expérience exigée"; //D,S,E
+type ModeSelectionPartenairesParametre = "Inclus" | "Exclu";
+type OrigineOffreParametre = "Pôle emploi" | "Partenaire";
+type PeriodeSalaireParametre = "Mensuel" | "Annuel" | "Horaire" | "Cachet"; // M,A,H,C need salaire min
+type QualificationParametre = "non-cadre" | "cadre"; // 0,9
+type SortParametre = "Pertinence décroissante , distance croissante, date de création horodatée décroissante" | "Date de création horodatée décroissante, pertinence décroissante, distance croissante" | "Distance croissante, pertinence décroissante, date de création horodatée décroissante";
 
-type Appelation = 
-{
-    code : string,
-    libelle : string
-};
 
-type AppelationParametre = "";
-type CodeROMEParametre = "";
-
+const AppelationArrayParametre = new AppelationArray();
+const CodeNAFArrayParametre = new CodeNAFArray();
+const CodeROMEArrayParametre = new CodeROMEArray();
+const CommunesArrayParametre = new CommunesArray();
+const DepartemensArrayParametre = new DepartementsArray();
+const DomainesArrayParametre = new DomainesArray();
+const NatureContratArrayParametre = new NatureContratArray();
+const NiveauFormationArrayParametre = new NiveauFormationArray();
+const PaysArrayParametre = new PaysArray();
+const ContinentsArrayParametre = new ContinentsArray();
+const PermisArrayParametre = new PermisArray();
+const RegionsArrayParametre = new RegionsArray();
+const TypeContratArrayParametre = new TypeContratArray();
+const ThemeArrayParametre = new ThemeArray();
 
 type OffreDemploisParametre = 
 {
-    accesTravailleurHandicape : boolean,
-    appellation : AppelationParametre,
-    codeNAF : string,
-    codeROME : CodeROMEParametre
+    motsCles? : string,
+    accesTravailleurHandicape? : boolean,
+    appellation? : AppelationParametre,
+    codeNAF? : CodeNAFParametre,
+    codeROME? : CodeROMEParametre,
+    commune? : CommunesParametre,
+    departement? : DepartementsParametre,
+    distance? : number, // need commune
+    domaine? : DomainesParametre,
+    dureeContratMax? : number, // double between 0-99
+    dureeContratMin? : number, // double between 0-99
+    dureeHebdo? : number,
+    dureeHebdoMax? : DureeHebdoFormat,
+    dureeHebdoMin? : DureeHebdoFormat,
+    entreprisesAdaptees? : boolean,
+    experience? : ExperienceParametre,
+    experienceExigence? : ExperienceExigenceParametre,
+    inclureLimitrophes? : boolean,
+    maxCreationDate? : Date,
+    minCreationDate? : Date,
+    modeSelectionPartenaires? : ModeSelectionPartenairesParametre,
+    natureContrat? : NatureContratParametre,
+    niveauFormation? : NiveauFormationParametre;
+    offresMRS? : boolean,
+    offresManqueCandidats? : boolean,
+    origineOffre? : [OrigineOffreParametre], //1 -> Pôle emploi / 2 -> Partenaire
+    partenaire? : string,
+    paysContinent? : [PaysParametre | ContinentsParametre],
+    periodeSalaire? : PeriodeSalaireParametre,
+    permis? : [PermisParametre],
+    publieeDepuis? : number,
+    qualification? : QualificationParametre,
+    range? : RangeFormat, 
+    region? : [RegionsParametre],
+    salaireMin? : number, //Salaire minimum recherché. Si cette donnée est renseignée, le code du type de salaire minimum est obligatoire.
+    secteurActivite? : CodeNAFParametre, //  (2 premiers chiffres)
+    sort? : SortParametre,
+    tempsPlein? : boolean,
+    theme? : ThemeParametre,
+    typeContrat? : TypeContratParametre
 };
 
 class FranceTravail{
-    protected clientId : string;
-    protected SecretId : string;
-    protected token : string;
-    public Referentiel : Referentiel;
+    private clientId : string;
+    private SecretId : string;
+    private token : string;
+    public readonly Referentiel : Referentiel;
 
-    constructor(clientId : string,SecretId : string){
+    constructor(clientId : string,SecretId : string)
+    {
         this.clientId = clientId;
         this.SecretId = SecretId;
-        this.Referentiel = new Referentiel(clientId,SecretId);
+        this.Referentiel = new Referentiel(this.GetToken,this.clientId,this.SecretId);
     };
 
-    protected async GetToken(Api : string,realm : string) : Promise<void>
+    private async GetToken(Api : string,realm : string) : Promise<string>
     {
         const body = `grant_type=client_credentials&client_id=${this.clientId}&client_secret=${this.SecretId}&scope=${Api}`;
         const headers = {
@@ -92,27 +133,47 @@ class FranceTravail{
                 console.error(err);
             }
         });
-        if(response?.status === 200){this.token = response.data["access_token"]}
+        if(response?.status === 200){
+            return response.data["access_token"];
+        }
+        else{
+            return "Error"
+        }
     }
 
-    async OffresDemplois()
+    async OffresDemplois(Parametre? : OffreDemploisParametre)
     {
-        await this.GetToken("o2dsoffre","partenaire");
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
 
-
+        const headers = {
+            Authorization: `Bearer ${this.token}`,
+        }
+        const queryParametre = `accesTravailleurHandicape=true`
+        const response = await axios.get(`https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search`,{headers : headers}).catch(err=>{console.error(err)});
+        return response?.data;
     }
-
 }
 
-class Referentiel extends FranceTravail{
+class Referentiel{
+    private GetToken : Function;
+    protected clientId : string;
+    protected SecretId : string;
+    protected token : string;
+
+    constructor(GetTokenMethode : Function,clientId : string,SecretId : string){
+        this.GetToken = GetTokenMethode;
+        this.clientId = clientId;
+        this.SecretId = SecretId;
+    }
 
     async AppellationsOffreDemplois() : Promise<[Appelation] | void>
         {
-            super.GetToken("o2dsoffre","partenaire");
-    
+            this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
             const headers = 
             {
-                Authorization : "Bearer " + this.token
+                Authorization : `Bearer ${this.token}`,
+                Accept: 'application/json'
             };
 
             let response : AxiosResponse<any,any> | void
@@ -126,5 +187,303 @@ class Referentiel extends FranceTravail{
                 {
                 return response.data;
             }
+    }
+
+    async CodeNAFOffreDemplois() : Promise<[CodeNAF] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/nafs",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
         }
+    }
+
+    async CodeROMEOffreDemplois() : Promise<[CodeROME] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/metiers",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async CommunesOffreDemplois() : Promise<[Communes] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/communes",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async DepartementsOffreDemplois() : Promise<[Departements] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/departements",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async DomainesOffreDemplois() : Promise<[Domaines] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/domaines",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async NatureContratOffreDemplois() : Promise<[NatureContrat] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/naturesContrats",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async NiveauFormationOffreDemplois() : Promise<[NiveauFormation] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/niveauxFormations",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async PaysOffreDemplois() : Promise<[Pays] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/pays",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+    async ContinentsOffreDemplois() : Promise<[Continents] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/continents",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async PermisOffreDemplois() : Promise<[Permis] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/permis",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async RegionsOffreDemplois() : Promise<[Regions] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/regions",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async TypeContratOffreDemplois() : Promise<[TypeContrat] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/typesContrats",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
+
+    async ThemeOffreDemplois() : Promise<[Theme] | void>
+    {
+        this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
+
+        const headers = 
+        {
+            Authorization : `Bearer ${this.token}`,
+            Accept: 'application/json'
+        };
+
+        let response : AxiosResponse<any,any> | void
+        response = await axios.get("https://api.francetravail.io/partenaire/offresdemploi/v2/referentiel/themes",{headers : headers})
+        .catch(err=>
+        {
+            console.error(err);
+        });
+
+        if(response?.status === 200)
+            {
+            return response.data;
+        }
+    }
 }
