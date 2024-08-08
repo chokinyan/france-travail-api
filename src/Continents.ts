@@ -6,8 +6,8 @@ export type Continents = {
 };
 
 export class ContinentsArray{
-    public readonly LibelleArray : string[];
-    public readonly CodeArray : string[];
+    public readonly LibelleArray : Array<string>;
+    public readonly CodeArray : Array<string>;
 
     constructor(){
         this.LibelleArray = ["France (continent fictif)" ,"EUROPE (hors France)" ,"Océanie" ,"Afrique" ,"Amérique" ,"Asie" ,"Monde"];

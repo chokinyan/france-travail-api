@@ -6,8 +6,8 @@ export type TypeContrat = {
 }
 
 export class TypeContratArray{
-    public readonly LibelleArray : string[];
-    public readonly CodeArray : string[];
+    public readonly LibelleArray : Array<string>;
+    public readonly CodeArray : Array<string>;
 
     constructor(){
         this.LibelleArray = ["Contrat à durée indéterminée" ,"Contrat à durée déterminée" ,"Mission intérimaire" ,"Contrat travail saisonnier" ,"Profession commerciale" ,"Franchise" ,"Profession libérale" ,"Reprise d'entreprise" ,"Contrat travail temporaire insertion" ,"Contrat durée déterminée insertion" ,"CDI Intérimaire"];

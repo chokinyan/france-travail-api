@@ -10,8 +10,8 @@ export type Departements = {
 
 export class DepartementsArray{
 
-    public readonly LibelleArray : string[];
-    public readonly CodeArray : string[];
+    public readonly LibelleArray : Array<string>;
+    public readonly CodeArray : Array<string>;
 
     constructor(){
 

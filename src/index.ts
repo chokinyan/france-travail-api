@@ -13,25 +13,25 @@ import {Permis,PermisArray,PermisParametre} from './Permis.js';
 import {Regions,RegionsArray,RegionsParametre} from './Regions.js';
 import {TypeContrat,TypeContratArray,TypeContratParametre} from './TypeContrat.js';
 import {Theme,ThemeArray,ThemeParametre} from './Theme.js';
+import {DivisionNAFArray,DivisionNAFParametre} from './DivisionNAF.js';
 
-type DureeHebdoFormat = {
+export type DureeHebdoFormat = {
     heure : number //beetween 0-23
     minute : number //beetween 0-59
 }
 
-type RangeFormat = {
+export type RangeFormat = {
     start : number,
     end : number
 }
 
-type ExperienceParametre = "moins d'un an" | "de 1 à 3 ans" | "plus de 3 ans"; //1,2,3
-type ExperienceExigenceParametre = "débutant accepté" | "expérience souhaitée" | "expérience exigée"; //D,S,E
-type ModeSelectionPartenairesParametre = "Inclus" | "Exclu";
-type OrigineOffreParametre = "Pôle emploi" | "Partenaire";
-type PeriodeSalaireParametre = "Mensuel" | "Annuel" | "Horaire" | "Cachet"; // M,A,H,C need salaire min
-type QualificationParametre = "non-cadre" | "cadre"; // 0,9
-type SortParametre = "Pertinence décroissante , distance croissante, date de création horodatée décroissante" | "Date de création horodatée décroissante, pertinence décroissante, distance croissante" | "Distance croissante, pertinence décroissante, date de création horodatée décroissante";
-
+export type ExperienceParametre = "moins d'un an" | "de 1 à 3 ans" | "plus de 3 ans"; //1,2,3
+export type ExperienceExigenceParametre = "débutant accepté" | "expérience souhaitée" | "expérience exigée"; //D,S,E
+export type ModeSelectionPartenairesParametre = "INCLUS" | "EXCLU";
+export type OrigineOffreParametre = "booth" | "Pôle emploi" | "Partenaire";
+export type PeriodeSalaireParametre = "Mensuel" | "Annuel" | "Horaire" | "Cachet"; // M,A,H,C need salaire min
+export type QualificationParametre = "booth" | "non-cadre" | "cadre"; // 0,9
+export type SortParametre = "Pertinence décroissante , distance croissante, date de création horodatée décroissante" | "Date de création horodatée décroissante, pertinence décroissante, distance croissante" | "Distance croissante, pertinence décroissante, date de création horodatée décroissante";
 
 const AppelationArrayParametre = new AppelationArray();
 const CodeNAFArrayParametre = new CodeNAFArray();
@@ -45,18 +45,21 @@ const PaysArrayParametre = new PaysArray();
 const ContinentsArrayParametre = new ContinentsArray();
 const PermisArrayParametre = new PermisArray();
 const RegionsArrayParametre = new RegionsArray();
+const DivisionNAFArrayParametre = new DivisionNAFArray();
 const TypeContratArrayParametre = new TypeContratArray();
 const ThemeArrayParametre = new ThemeArray();
 
-type OffreDemploisParametre = 
+export type ReferentielArrayParametre = AppelationArray | CodeNAFArray | CodeROMEArray | CommunesArray | DepartementsArray | DomainesArray | NatureContratArray | NiveauFormationArray | PaysArray | ContinentsArray | RegionsArray | TypeContratArray | ThemeArray | DivisionNAFArray;
+
+export type OffreDemploisParametre = 
 {
     motsCles? : string,
     accesTravailleurHandicape? : boolean,
     appellation? : AppelationParametre,
-    codeNAF? : CodeNAFParametre,
-    codeROME? : CodeROMEParametre,
-    commune? : CommunesParametre,
-    departement? : DepartementsParametre,
+    codeNAF? : Array<CodeNAFParametre>,
+    codeROME? : Array<CodeROMEParametre>,
+    commune? : Array<CommunesParametre>,
+    departement? : Array<DepartementsParametre>,
     distance? : number, // need commune
     domaine? : DomainesParametre,
     dureeContratMax? : number, // double between 0-99
@@ -65,37 +68,39 @@ type OffreDemploisParametre =
     dureeHebdoMax? : DureeHebdoFormat,
     dureeHebdoMin? : DureeHebdoFormat,
     entreprisesAdaptees? : boolean,
-    experience? : ExperienceParametre,
+    experience? : Array<ExperienceParametre>,
     experienceExigence? : ExperienceExigenceParametre,
     inclureLimitrophes? : boolean,
     maxCreationDate? : Date,
     minCreationDate? : Date,
     modeSelectionPartenaires? : ModeSelectionPartenairesParametre,
-    natureContrat? : NatureContratParametre,
-    niveauFormation? : NiveauFormationParametre;
+    natureContrat? : Array<NatureContratParametre>,
+    niveauFormation? : NiveauFormationParametre,
     offresMRS? : boolean,
     offresManqueCandidats? : boolean,
-    origineOffre? : [OrigineOffreParametre], //1 -> Pôle emploi / 2 -> Partenaire
+    origineOffre? : OrigineOffreParametre,
     partenaire? : string,
-    paysContinent? : [PaysParametre | ContinentsParametre],
+    paysContinent? : PaysParametre | ContinentsParametre,
     periodeSalaire? : PeriodeSalaireParametre,
-    permis? : [PermisParametre],
+    permis? : Array<PermisParametre>,
     publieeDepuis? : number,
-    qualification? : QualificationParametre,
+    qualification? : Array<QualificationParametre>,
     range? : RangeFormat, 
-    region? : [RegionsParametre],
+    region? : Array<RegionsParametre>,
     salaireMin? : number, //Salaire minimum recherché. Si cette donnée est renseignée, le code du type de salaire minimum est obligatoire.
-    secteurActivite? : CodeNAFParametre, //  (2 premiers chiffres)
+    secteurActivite? : Array<DivisionNAFParametre>, //  (2 premiers chiffres) 2 max
     sort? : SortParametre,
     tempsPlein? : boolean,
-    theme? : ThemeParametre,
-    typeContrat? : TypeContratParametre
+    theme? : Array<ThemeParametre>,
+    typeContrat? : Array<TypeContratParametre>
 };
 
-class FranceTravail{
-    private clientId : string;
-    private SecretId : string;
-    private token : string;
+const getCode : Function = (Array : ReferentielArrayParametre,value : string)=>{return Array.CodeArray.at(Array.LibelleArray.indexOf(value))};
+
+export class FranceTravail{
+    protected clientId : string;
+    protected SecretId : string;
+    protected token : string;
     public readonly Referentiel : Referentiel;
 
     constructor(clientId : string,SecretId : string)
@@ -145,22 +150,307 @@ class FranceTravail{
     {
         this.token = await this.GetToken("o2dsoffre api_offresdemploiv2","partenaire");
 
+        let QueryParametre : string = "";
+
         const headers = {
             Authorization: `Bearer ${this.token}`,
         }
-        const queryParametre = `accesTravailleurHandicape=true`
-        const response = await axios.get(`https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search`,{headers : headers}).catch(err=>{console.error(err)});
+
+
+        if(Parametre?.accesTravailleurHandicape){
+            QueryParametre += `&accesTravailleurHandicape=true`;
+        }
+        if(Parametre?.appellation){
+            QueryParametre += `&appellation=${getCode(AppelationArrayParametre,Parametre.appellation)}`;
+        }
+        if(Parametre?.codeNAF){
+            if(Parametre.codeNAF.length < 2){
+                switch(Parametre.codeNAF.length){
+                    case 2 :
+                        QueryParametre += `&codeNAF=${getCode(CodeNAFArrayParametre,Parametre.codeNAF[0])}%2C${getCode(CodeNAFArrayParametre,Parametre.codeNAF[1])}`;
+                        break;
+                    case 1:
+                        QueryParametre += `&codeNAF=${getCode(CodeNAFArrayParametre,Parametre.codeNAF[0])}`;
+                        break;
+                    default:
+                        break;
+                }
+            }else{
+                console.error("Code NAF over than 2 parametre it will be not use in the request");
+            }
+        }
+        if(Parametre?.codeROME){
+            let codeROME : string = "";
+            Parametre.codeROME.forEach(item=>{
+                codeROME += `${getCode(CodeROMEArrayParametre,item)}%2C`;
+            });
+            QueryParametre += `&codeROME=${codeROME}`;
+        }
+        if(Parametre?.commune){
+            let codeCommune : string = "";
+            Parametre.commune.forEach(item=>{
+                codeCommune += `${getCode(CommunesArrayParametre,item)}%2C`;
+            });
+            QueryParametre += `&commune=${codeCommune}`;
+        }
+        if(Parametre?.departement){
+            let codeDepartement : string = "";
+            Parametre.departement.forEach(item=>{
+                codeDepartement += `${getCode(DepartemensArrayParametre,item)}%2C`;
+            });
+            QueryParametre += `&departement=${codeDepartement}`;
+        }
+        if(Parametre?.distance && Parametre?.commune){
+            QueryParametre += `&distance=${Parametre.distance}`;
+        }
+        if(Parametre?.domaine){
+            QueryParametre += `&domaine=${getCode(DomainesArrayParametre,Parametre.domaine)}`;
+        }
+        if(Parametre?.dureeContratMax){
+            if(Parametre.dureeContratMax < 0 && Parametre.dureeContratMax > 99){
+                QueryParametre += `&dureeContratMax=${Parametre.dureeContratMax.toPrecision(2)}`;
+            }
+            else{
+                console.error("dureeContratMax under 0 or over 99, it will be not use in the request");
+            }
+        }
+        if(Parametre?.dureeContratMin){
+            if(Parametre.dureeContratMin < 0 && Parametre.dureeContratMin > 99){
+
+                QueryParametre += `&dureeContratMin=${Parametre.dureeContratMin.toPrecision(2)}`;
+            }else{
+                console.error("dureeContratMin under 0 or over 99, it will be not use in the request");
+            }
+        }
+        if(Parametre?.dureeHebdo){
+            console.log("Celui qui trouves ca sert a quoi veuillez me dire stp prcq la vie jsp la");
+            //&dureeHebdo+=10
+        }
+        if(Parametre?.dureeHebdoMax){
+            let dureeHebdoMax : string = "";
+            if(Parametre.dureeHebdoMax.heure < 0 || Parametre.dureeHebdoMax.heure > 23 ){
+                if(Parametre.dureeHebdoMax.heure < 10){
+                    dureeHebdoMax += `0${Parametre.dureeHebdoMax.heure}`;
+                }else{
+                    dureeHebdoMax += `${Parametre.dureeHebdoMax.heure}`;
+                }
+            }
+            if(Parametre.dureeHebdoMax.minute < 0 || Parametre.dureeHebdoMax.minute > 59){
+                if(Parametre.dureeHebdoMax.minute < 10){
+                    dureeHebdoMax += `0${Parametre.dureeHebdoMax.minute}`;
+                } else{
+                    dureeHebdoMax += `${Parametre.dureeHebdoMax.minute})`;
+                }
+            }
+            QueryParametre += `&dureeHebdoMax=${dureeHebdoMax}`;
+        }
+        if(Parametre?.dureeHebdoMin){
+            let dureeHebdoMin : string = "";
+            if(Parametre.dureeHebdoMin.heure < 0 || Parametre.dureeHebdoMin.heure > 23 ){
+                if(Parametre.dureeHebdoMin.heure < 10){
+                    dureeHebdoMin += `0${Parametre.dureeHebdoMin.heure}`;
+                }else{
+                    dureeHebdoMin += `${Parametre.dureeHebdoMin.heure}`;
+                }
+            }
+            if(Parametre.dureeHebdoMin.minute < 0 || Parametre.dureeHebdoMin.minute > 59){
+                if(Parametre.dureeHebdoMin.minute < 10){
+                    dureeHebdoMin += `0${Parametre.dureeHebdoMin.minute}`;
+                } else{
+                    dureeHebdoMin += `${Parametre.dureeHebdoMin.minute})`;
+                }
+            }
+            QueryParametre += `&dureeHebdoMin=${dureeHebdoMin}`;
+        }
+        if(Parametre?.entreprisesAdaptees){
+            QueryParametre += "&entreprisesAdaptees=true";
+        }
+        if(Parametre?.experience){
+            let experience : string = "";
+            Parametre.experience.forEach(item=>{
+                switch(item){
+                    case "moins d'un an":
+                        experience += "1%2C";
+                        break;
+                    case "de 1 à 3 ans":
+                        experience += "2%2C";
+                        break;
+                    case "plus de 3 ans":
+                        experience += "3%2C";
+                        break;
+                }
+            });
+            QueryParametre += `&experience=${experience}`;
+
+        }
+        if(Parametre?.experienceExigence){
+            switch(Parametre.experienceExigence){
+                case "débutant accepté":
+                    QueryParametre += "&experienceExigence=D";
+                    break;
+                case "expérience souhaitée":
+                    QueryParametre += "&experienceExigence=S";
+                    break;
+                case "expérience exigée":
+                    QueryParametre += "&experienceExigence=E";
+                    break;
+            }
+        }
+        if(Parametre?.inclureLimitrophes){
+            QueryParametre += "&inclureLimitrophes=true";
+        }
+        if(Parametre?.maxCreationDate){
+            QueryParametre += `&maxCreationDate=${Parametre.maxCreationDate.toISOString()}`;
+        }
+        if(Parametre?.minCreationDate){
+            QueryParametre += `&minCreationDate=${Parametre.minCreationDate.toISOString()}`;
+        }
+        if(Parametre?.modeSelectionPartenaires){
+            QueryParametre += `&modeSelectionPartenaires=${Parametre.modeSelectionPartenaires}`;
+        }
+        if(Parametre?.motsCles){
+            QueryParametre += `&motsCles=${Parametre.motsCles}`;
+        }
+        if(Parametre?.natureContrat){
+            let natureContrat : string = "";
+            Parametre.natureContrat.forEach(item=>{
+                natureContrat += `${getCode(NatureContratArrayParametre,item)}%2C`;
+            });
+            QueryParametre += `&natureContrat=${natureContrat}`;
+        }
+        if(Parametre?.niveauFormation){
+            QueryParametre += `&niveauFormation=${getCode(NiveauFormationArrayParametre,Parametre.niveauFormation)}`;
+        }
+        if(Parametre?.offresMRS){
+            QueryParametre += "&offresMRS=true";
+        }
+        if(Parametre?.offresManqueCandidats){
+            QueryParametre += "&offresManqueCandidats=true";
+        }
+        if(Parametre?.origineOffre){
+            switch(Parametre.origineOffre){
+                //origineOffre
+                case "booth":
+                    QueryParametre += "&origineOffre=0";
+                    break;
+                case "Pôle emploi":
+                    QueryParametre += "&origineOffre=1";    
+                    break;
+                case "Partenaire":
+                    QueryParametre += "&origineOffre=2";
+                    break;
+            }
+        }
+        if(Parametre?.partenaire){
+            QueryParametre += `$partenaires=${Parametre.partenaire}`;
+        }
+        if(Parametre?.paysContinent){
+            if(Parametre.paysContinent in PaysArrayParametre.LibelleArray){
+                QueryParametre = `$paysContinent=${getCode(PaysArrayParametre,Parametre.paysContinent)}`;
+            }else if(Parametre.paysContinent in ContinentsArrayParametre.LibelleArray){
+                QueryParametre = `$paysContinent=${getCode(ContinentsArrayParametre,Parametre.paysContinent)}`;
+            }
+        }
+        if(Parametre?.periodeSalaire && Parametre?.salaireMin){
+            QueryParametre += `&periodeSalaire=${Parametre.periodeSalaire.charAt(0).toUpperCase()}`;
+        }
+        if(Parametre?.permis){
+            QueryParametre += `&permis=${getCode(PermisArrayParametre,Parametre.permis)}`
+        }
+        if(Parametre?.publieeDepuis){
+            QueryParametre += `&publieeDepuis=${Parametre.publieeDepuis}`;
+        }
+        if(Parametre?.qualification){
+            let qualification : string = "";
+            Parametre.qualification.forEach(item=>{
+                switch(item){
+                    case "booth":
+                        qualification += "X%2C";
+                        break;
+                    case "cadre":
+                        qualification += "9%2C";
+                        break;
+                    case "non-cadre":
+                        qualification += "0%2C";
+                        break;
+                }
+            })
+
+        }
+        if(Parametre?.range){
+            if(!(Parametre.range.start < 0 || Parametre.range.start > 3000) || !(Parametre.range.end < 0 || Parametre.range.end > 3149)){
+                QueryParametre += `&range=${Parametre.range.start}-${Parametre.range.end}`;
+            }else{
+                console.error("Wrong range format, it will be not use in the request");
+            }
+        }
+        if(Parametre?.region){
+            QueryParametre += `&region=${getCode(RegionsArrayParametre,Parametre.region)}`;
+        }
+        if(Parametre?.salaireMin){
+            if(Parametre?.periodeSalaire){
+                QueryParametre += `&salaireMin=${Parametre.salaireMin}`;
+            }
+        }
+        if(Parametre?.secteurActivite){
+            if(Parametre.secteurActivite.length < 2){
+                switch(Parametre.secteurActivite.length){
+                    case 2 :
+                        QueryParametre += `&secteurActivite=${getCode(DivisionNAFArrayParametre,Parametre.secteurActivite[0])}%2C${getCode(DivisionNAFArrayParametre,Parametre.secteurActivite[1])}`;
+                        break;
+                    case 1:
+                        QueryParametre += `&secteurActivite=${getCode(DivisionNAFArrayParametre,Parametre.secteurActivite[0])}`;
+                        break;
+                    default:
+                        break;
+                }
+            }else{
+                console.error("Division NAF over than 2 parametre it will be not use in the request");
+            }
+        }
+        if(Parametre?.sort){
+            switch(Parametre.sort){
+                case "Pertinence décroissante , distance croissante, date de création horodatée décroissante" :
+                    QueryParametre += "&sort=0";
+                    break;
+                case "Date de création horodatée décroissante, pertinence décroissante, distance croissante" :
+                    QueryParametre += "&sort=1";    
+                    break;
+                case "Distance croissante, pertinence décroissante, date de création horodatée décroissante":
+                    QueryParametre += "&sort=2";
+                    break;
+            }
+        }
+        if(Parametre?.tempsPlein){
+            QueryParametre += "&tempsPlein=true";
+        }
+        if(Parametre?.theme){
+            QueryParametre += `&theme=${getCode(ThemeArrayParametre,Parametre.theme)}`;
+        }
+        if(Parametre?.typeContrat){
+            let typeContrat : string = "";
+            Parametre.typeContrat.forEach(item=>{
+                typeContrat += `${getCode(TypeContratArrayParametre,item)}%2C`;
+            });
+            QueryParametre += `&typeContrat=${typeContrat}`;
+        }
+
+        if(QueryParametre.length !== 0){
+            QueryParametre = `?${QueryParametre.substring(1, QueryParametre.length)}`;
+        }
+
+        const response = await axios.get(`https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search${QueryParametre}`,{headers : headers}).catch(err=>{console.error(err)});
         return response?.data;
     }
 }
 
 class Referentiel{
-    private GetToken : Function;
+    protected GetToken : Function;
     protected clientId : string;
     protected SecretId : string;
     protected token : string;
 
-    constructor(GetTokenMethode : Function,clientId : string,SecretId : string){
+    constructor(protected GetTokenMethode : Function,clientId : string,SecretId : string){
         this.GetToken = GetTokenMethode;
         this.clientId = clientId;
         this.SecretId = SecretId;

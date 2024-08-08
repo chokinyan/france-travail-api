@@ -6,8 +6,8 @@ export type Regions = {
 }
 
 export class RegionsArray{
-    public readonly LibelleArray : string[];
-    public readonly CodeArray : string[];
+    public readonly LibelleArray : Array<string>;
+    public readonly CodeArray : Array<string>;
 
     constructor(){
         this.LibelleArray = ["Guadeloupe" ,"Martinique" ,"Guyane" ,"La Réunion" ,"Mayotte" ,"Ile-de-France" ,"Centre-Val de Loire" ,"Bourgogne-Franche-Comté" ,"Normandie" ,"Hauts-de-France" ,"Grand Est" ,"Pays de la Loire" ,"Bretagne" ,"Nouvelle-Aquitaine" ,"Occitanie" ,"Auvergne-Rhône-Alpes" ,"Provence-Alpes-Côte d'Azur" ,"Corse"];
